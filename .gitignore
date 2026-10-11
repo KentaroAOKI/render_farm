@@ -1,0 +1,78 @@
+# Farm state, source assets, outputs, and computer-specific configuration
+/data/
+/workers/
+/results/
+/staging/
+/examples/
+/projects/
+/package_status.json
+/tests/runtime/
+/bin/WinPython/
+/bin/*.exe
+/tools/fastdvdnet/
+/reports/
+
+# Python caches, environments, build and test output
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+build/
+dist/
+*.egg-info/
+
+# Local credentials and environment overrides
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Local logs and temporary files
+*.log
+*.tmp
+*.bak
+*.swp
+*~
+
+# Editors and operating systems
+.idea/
+.vscode/
+.vs/
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Public repository allowlist. New top-level files and generated files under
+# source directories must be reviewed before they can be added.
+/*
+!/.gitignore
+!/.gitattributes
+!/.editorconfig
+!/README.md
+!/VALIDATION.md
+!/CONTRIBUTING.md
+!/asset_paths.example.json
+!/farm_cli.py
+!/launch.ps1
+!/start.cmd
+!/起動.cmd
+!/farm/
+/farm/*
+!/farm/*.py
+!/farm/*.mel
+!/tests/
+/tests/*
+!/tests/*.py
+/tests/catalog_real_smoke.py
+/tests/reference_mapping_smoke.py
+!/tools/
+/tools/*
+!/tools/*.py

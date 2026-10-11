@@ -1,0 +1,25 @@
+* text=auto
+
+*.py text eol=lf
+*.mel text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+.gitignore text eol=lf
+.gitattributes text eol=lf
+.editorconfig text eol=lf
+
+# Windows launchers
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+
+*.png binary
+*.jpg binary
+*.exr binary
+*.mb binary
+*.abc binary
+*.mkv binary
+*.mp4 binary
+*.zip binary

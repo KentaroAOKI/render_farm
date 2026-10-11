@@ -1,0 +1,1 @@
+python("import farm.maya_entry; farm.maya_entry.gui_start()");
