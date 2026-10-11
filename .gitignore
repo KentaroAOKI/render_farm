@@ -57,8 +57,6 @@ Desktop.ini
 !/.gitattributes
 !/.editorconfig
 !/README.md
-!/VALIDATION.md
-!/CONTRIBUTING.md
 !/asset_paths.example.json
 !/farm_cli.py
 !/launch.ps1
