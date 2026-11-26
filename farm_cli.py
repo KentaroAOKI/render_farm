@@ -41,6 +41,11 @@ def main():
     edit.add_argument("--revision", type=int, required=True)
     edit.add_argument("--video", choices=["on", "off"], required=True)
     edit.add_argument("--fastdvdnet", choices=["on", "off"], required=True)
+    job_range = sub.add_parser("job-range", help="Edit the frame range of an untouched pending job")
+    job_range.add_argument("id")
+    job_range.add_argument("--revision", type=int, required=True)
+    job_range.add_argument("--start", type=int, required=True)
+    job_range.add_argument("--end", type=int, required=True)
     work = sub.add_parser("worker")
     work.add_argument("--once", action="store_true")
     sub.add_parser("stop")
@@ -82,6 +87,8 @@ def main():
         store.action(args.id, args.action, args.revision)
     elif args.command == "job-post":
         result = store.update_job_post(args.id, {"video": args.video == "on", "fastdvdnet": args.fastdvdnet == "on"}, args.revision)
+    elif args.command == "job-range":
+        result = store.update_job_range(args.id, args.start, args.end, args.revision)
     elif args.command == "worker":
         from farm.worker import Supervisor
         Supervisor(args.root).run(once=args.once)

@@ -275,6 +275,33 @@ class Store:
             job["events"].append({"time": time.time(), "message": "後処理設定を変更", "before": old, "after": dict(options)})
             return copy.deepcopy(job)
 
+    def update_job_range(self, jid, start, end, expected_revision):
+        """Change the range of an untouched pending job without replacing its ID."""
+        from .assets import stored_job_metadata, validate_settings
+        with self.transaction() as s:
+            job = s["jobs"][jid]
+            if job["revision"] != expected_revision:
+                raise ValueError("他の操作で変更されました。一覧を更新してください")
+            if job["state"] != "pending" or job.get("completed") or job.get("started") or job.get("work"):
+                raise ValueError("未開始の待機中ジョブだけ範囲を変更できます")
+            scene = s["scenes"][job["scene_id"]]
+            if scene["revision"] != job["scene_revision"]:
+                raise ValueError("旧版ジョブです。最新版を投入してください")
+            before = {key: job["settings"].get(key) for key in ("start", "end", "range_source")}
+            settings = validate_settings({**job["settings"], "start": start, "end": end,
+                                          "range_source": "manual"}, stored_job_metadata(scene))
+            job["settings"] = settings
+            job["total"] = (len(settings["layers"]) * len(settings["cameras"])
+                            * len(range(settings["start"], settings["end"] + 1, settings["step"])))
+            job["signature"] = digest([job["scene_id"], job["scene_revision"], settings,
+                                       job.get("source"), job.get("maya_version") if job.get("maya_version_required") else None])
+            now = time.time()
+            job["revision"] += 1
+            job["updated"] = now
+            job["events"].append({"time": now, "message": "レンダリング範囲を変更", "before": before,
+                                  "after": {key: settings[key] for key in ("start", "end", "range_source")}})
+            return copy.deepcopy(job)
+
     def event(self, jid, message):
         with self.transaction() as s:
             s["jobs"][jid]["events"].append({"time": time.time(), "message": message})

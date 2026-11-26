@@ -70,6 +70,21 @@ class CoreTests(unittest.TestCase):
             ensure_detailed(self.store, [self.sid], inspect_fn=inspector)
         return enqueue(self.store, self.sid, settings, prepared_revision=self.store.read()["scenes"][self.sid]["revision"])
 
+    def test_pending_job_range_update_changes_signature_and_total(self):
+        jid = self.job()
+        original = self.store.read()["jobs"][jid]
+        updated = self.store.update_job_range(jid, 0, 4, original["revision"])
+        self.assertEqual((updated["settings"]["start"], updated["settings"]["end"]), (0, 4))
+        self.assertEqual(updated["settings"]["range_source"], "manual")
+        self.assertEqual(updated["total"], 5)
+        self.assertNotEqual(updated["signature"], original["signature"])
+        with self.assertRaises(ValueError):
+            self.store.update_job_range(jid, 0, 5, original["revision"])
+        with self.store.transaction() as state:
+            state["jobs"][jid]["started"] = 1
+        with self.assertRaises(ValueError):
+            self.store.update_job_range(jid, 0, 5, updated["revision"])
+
     def test_unregister_preserves_files_and_job_history(self):
         jid = self.job()
         snapshot = self.store.read()["jobs"][jid]["snapshot"]

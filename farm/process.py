@@ -11,7 +11,7 @@ class ProcessGroup:
     def __init__(self, process):
         self.process = process
         self.handle = None
-        if os.name != "nt":
+        if os.name != "nt" or process.poll() is not None:
             return
         import ctypes as c
         from ctypes import wintypes as w
@@ -39,6 +39,10 @@ class ProcessGroup:
         if not self.handle or not kernel.SetInformationJobObject(self.handle, 9, c.byref(limits), c.sizeof(limits)) or not kernel.AssignProcessToJobObject(self.handle, w.HANDLE(int(process._handle))):
             error = c.get_last_error()
             self.close()
+            # Short-lived helpers such as FFmpeg thumbnail extraction may exit
+            # between Popen and assignment. There is no child left to own.
+            if process.poll() is not None:
+                return
             terminate_owned(process)
             raise RuntimeError("Mayaのプロセス所有権を確立できません。Windowsエラー " + str(error))
 
