@@ -10,7 +10,7 @@ from urllib.parse import quote
 from fractions import Fraction
 
 from .common import FileLock, atomic_json, command_flags, inside, read_json, runtime_env, sha256, worker_dir
-from .process import ProcessGroup
+from .process import terminate_owned
 from .results import scene_name, vacant, readable
 
 STATUS = {'unrendered': '未レンダリング', 'updated': '更新あり', 'queued': 'キュー投入済み', 'pending': '待機',
@@ -228,7 +228,6 @@ def build_dashboard(store, config, progress=None, cancelled=None):
             with log_path.open('ab') as log:
                 proc = subprocess.Popen([ffmpeg, '-hide_banner', '-loglevel', 'error', '-nostdin', *args], cwd=output,
                                         env=runtime_env(store.root, work), stdout=log, stderr=log, **command_flags())
-                group = ProcessGroup(proc)
                 try:
                     while proc.poll() is None:
                         guard()
@@ -236,7 +235,9 @@ def build_dashboard(store, config, progress=None, cancelled=None):
                     if proc.returncode:
                         raise RuntimeError('FFmpeg処理に失敗しました。ログ: ' + str(log_path))
                 finally:
-                    group.stop()
+                    # FFmpeg is a single process. Windows may reject attaching
+                    # a short-lived thumbnail process to a new Job Object.
+                    terminate_owned(proc)
         if videos:
             font = next((p for p in (Path(os.environ.get('WINDIR', 'C:/Windows')) / 'Fonts' / name
                                     for name in ('meiryo.ttc', 'YuGothM.ttc', 'msgothic.ttc')) if p.is_file()), None)
